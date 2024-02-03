@@ -31,7 +31,8 @@ function ChatWidget() {
     const [userName, setUserName] = useSyncedState('userName', 'Anonymous');
     const [inputPlaceholder, setInputPlaceholder] = useSyncedState('inputPlaceholder', 'Type a message...');
     const [inputActive, setInputActive] = useSyncedState('inputActive', false);
-    const [upvotedUserIds, setUpvotedUserIds] = useSyncedState<number[]>('upvotedUserIds', []);
+    const [upvotedUsers, setUpvotedUsers] = useSyncedState<User[]>('upvotedUsers', []);
+    const [downvotedUsers, setDownvotedUsers] = useSyncedState<User[]>('downvotedUsers', []);
     console.log("Current messages:", messages);
     const renderMessagesWithScroll = () => {
     return (
@@ -119,29 +120,47 @@ function ChatWidget() {
       };
 
       const handleupVote = (messageId: number, type: string) => {
-        setMessages(messages.map(m => {
-          if (m.id === messageId) {
-            return {
-              ...m,
-              upvotes: type === 'upvote' ? m.upvotes + 1 : m.upvotes,
-              
-            };
-          }
-          return m;
-        }));
+        const currentUser = figma.currentUser!;
+        if (currentUser && !upvotedUsers.some(user=>user.id===currentUser.id) ) {
+          // User has not upvoted
+          setMessages(messages.map(m => {
+            if (m.id === messageId) {
+              return {
+                ...m,
+                upvotes: type === 'upvote' ? m.upvotes + 1 : m.upvotes,
+                
+              };
+            }
+            return m;
+          }));
+          setUpvotedUsers([...upvotedUsers, currentUser]);
+        }
+        else{
+
+          console.log("You already upvoted!")
+          
+        }
       };
 
       const handledownVote = (messageId: number, type: string) => {
-        setMessages(messages.map(m => {
-          if (m.id === messageId) {
-            return {
-              ...m,
-              downvotes: type === 'downvote' ? m.downvotes + 1 : m.downvotes,
-              
-            };
-          }
-          return m;
-        }));
+        const currentUser = figma.currentUser;
+        if (currentUser && !downvotedUsers.some(user=>user.id===currentUser.id) ) {
+          setMessages(messages.map(m => {
+            if (m.id === messageId) {
+              return {
+                ...m,
+                downvotes: type === 'downvote' ? m.downvotes + 1 : m.downvotes,
+                
+              };
+            }
+            return m;
+          }));
+          setDownvotedUsers([...downvotedUsers, currentUser]);
+
+        }
+        else{
+          console.log("You can only downvote once!");
+        }
       };
 
       
